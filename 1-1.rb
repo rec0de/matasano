@@ -1,10 +1,9 @@
-require "base64"
+require_relative "matasano"
 
 hex = '49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d'
 
-binary = [hex].pack('H*')
-
-base64 = Base64.strict_encode64(binary)
+binary = Matasano.hex2bin(hex)
+base64 = Matasano.bin2b64(binary)
 
 puts base64.inspect
 

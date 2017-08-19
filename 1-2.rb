@@ -1,23 +1,13 @@
-def hex2bin(hex)
-	return [hex].pack('H*')
-end
+require_relative "matasano"
 
-def bin2hex(bin)
-	return bin.bytes.map{ |x| x.to_s(16).rjust(2, '0') }.join('')
-end
+input = Matasano.hex2bin('1c0111001f010100061a024b53535009181c')
+key = Matasano.hex2bin('686974207468652062756c6c277320657965')
 
-def str_xor(a, b)
-	return a.bytes.zip(b.bytes).map{ |x, y| x^y }.pack('c*')
-end
-
-input = hex2bin('1c0111001f010100061a024b53535009181c')
-key = hex2bin('686974207468652062756c6c277320657965')
-
-res = str_xor(input, key)
+res = Matasano.xor(input, key)
 
 puts res
 
-res = bin2hex(res)
+res = Matasano.bin2hex(res)
 
 puts res
 
