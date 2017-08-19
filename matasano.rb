@@ -60,6 +60,28 @@ class Matasano
 		return self.xor(stretched, input)
 	end
 
+	# Encrypts using AES-128 ECB
+	# Input: binary plaintext, binary key
+	# Output: binary ciphertext
+	def self.aes128_ecb_encrypt(plain, key)
+		require "openssl"
+		cipher = OpenSSL::Cipher::AES128.new(:ECB)
+		cipher.encrypt
+		cipher.key = key
+		return cipher.update(plain) + cipher.final
+	end
+
+	# Decrypts using AES-128 ECB
+	# Input: binary ciphertext, binary key
+	# Output: binary plaintext
+	def self.aes128_ecb_decrypt(plain, key)
+		require "openssl"
+		cipher = OpenSSL::Cipher::AES128.new(:ECB)
+		cipher.decrypt
+		cipher.key = key
+		return cipher.update(plain) + cipher.final
+	end
+
 	# Cipher breaking
 
 	# Attempts to break single byte xor
