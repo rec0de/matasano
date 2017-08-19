@@ -19,18 +19,27 @@ def xor_find_key_length(cipher, min = 2, max = 40)
 
 	for keysize in min..max do
 
-		if keysize > cipher.length / 2
+		# break if keysize is too long for ciphertext
+		if keysize*2 > cipher.length
 			break
+		# if there is not enough ciphertext for 4 blocks, use only 2
+		elsif keysize * 4 > cipher.length
+			block_a = cipher[0...keysize]
+			block_b = cipher[keysize...keysize*2]
+
+			dist = hamming_dist(block_a, block_b).to_f
+		# otherwise calculate average hamming distance between the first 4 blocks
+		else
+			block_a = cipher[0...keysize]
+			block_b = cipher[keysize...keysize*2]
+			block_c = cipher[keysize*2...keysize*3]
+			block_d = cipher[keysize*3...keysize*4]
+
+			dist = hamming_dist(block_a, block_b) + hamming_dist(block_b, block_c) + hamming_dist(block_c, block_d) + hamming_dist(block_a, block_c) + hamming_dist(block_a, block_d) + hamming_dist(block_b, block_d)
+			dist = dist.to_f / 6
 		end
 
-		block_a = cipher[0...keysize]
-		block_b = cipher[keysize...keysize*2]
-		block_c = cipher[keysize*2...keysize*3]
-		block_d = cipher[keysize*3...keysize*4]
-
-		dist = hamming_dist(block_a, block_b) + hamming_dist(block_b, block_c) + hamming_dist(block_c, block_d) + hamming_dist(block_a, block_c) + hamming_dist(block_a, block_d) + hamming_dist(block_b, block_d)
-		dist = dist.to_f / 6
-
+		# normalize hamming distance to keysize
 		dist = dist.to_f / keysize
 
 		if dist < mindist
@@ -47,12 +56,14 @@ def xor_find_key(cipher, keysize)
 	key = Array.new
 	cipher = cipher.split('')
 
+	# split ciphertext into blocks ('reverse zip')
 	i = 0
 	for byte in cipher do
 		blocks[i] += byte
 		i = (i + 1)%keysize
 	end
 
+	# solve blocks individually & reconstruct key
 	for block in blocks do
 		res = try_sbyte_xor(block)
 
@@ -114,7 +125,7 @@ ciphertext = Base64.strict_decode64(ciphertext)
 
 estimated_keysize = xor_find_key_length(ciphertext)
 
-puts estimated_keysize.to_s
+puts 'Estimated keysize: ' + estimated_keysize.to_s
 
 recovered_key = xor_find_key(ciphertext, estimated_keysize)
 
@@ -122,4 +133,4 @@ plaintext = crypt_xor(recovered_key, ciphertext)
 
 puts plaintext.inspect
 
-puts recovered_key.inspect
+puts 'Recovered key: ' + recovered_key.inspect
