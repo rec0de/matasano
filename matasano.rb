@@ -20,6 +20,13 @@ class Matasano
 		return Base64.strict_decode64(b64)
 	end
 
+	def self.padd(string, blocksize)
+		string = string.b
+		padd_bytes = blocksize - (string.length % blocksize)
+		padding = ([padd_bytes]*padd_bytes).pack('c*')
+		return string + padding.b
+	end
+
 	# Binary operations
 
 	def self.xor(a, b)
