@@ -83,10 +83,27 @@ class Matasano
 	# Output: binary plaintext
 	def self.aes128_ecb_decrypt(plain, key)
 		require "openssl"
-		cipher = OpenSSL::Cipher::AES128.new(:ECB)
+		cipher = OpenSSL::Cipher::AES.new(128, :ECB)
 		cipher.decrypt
 		cipher.key = key
+		cipher.padding = 0
 		return cipher.update(plain) + cipher.final
+	end
+
+	# Decrypts AES-128 CBC
+	# Input: binary ciphertext, binary key, binary iv
+	# Output: binary plaintext
+	def self.aes128_cbc_decrypt(cipher, key, iv)
+		cipher = self.padd(cipher, 16)
+		plain = ''
+		prevblock = iv
+		for i in (0...cipher.length/16) do
+			cipherblock = cipher[i*16...(i+1)*16]
+			plain += self.xor(prevblock, self.aes128_ecb_decrypt(cipherblock, key))
+			prevblock = cipherblock
+		end
+
+		return plain
 	end
 
 	# Cipher breaking
