@@ -48,6 +48,15 @@ class Matasano
 
 	# Ciphers
 
+	def self.genkey(bytes = 16)
+		key = ''
+		for i in (1..bytes) do
+			key += [Random.rand(256)].pack('c*').b
+		end
+
+		return key
+	end
+
 	# Encrypts / Decrypts using single byte xor
 	# Input: binary input, integer representation of key byte
 	# Output: binary result
@@ -75,6 +84,7 @@ class Matasano
 		cipher = OpenSSL::Cipher::AES128.new(:ECB)
 		cipher.encrypt
 		cipher.key = key
+		cipher.padding = 0
 		return cipher.update(plain) + cipher.final
 	end
 
@@ -90,11 +100,28 @@ class Matasano
 		return cipher.update(plain) + cipher.final
 	end
 
+	# Encrypts AES-128 CBC
+	# Input: binary plaintext, binary key, binary iv
+	# Output: binary ciphertext
+	def self.aes128_cbc_encrypt(plain, key, iv)
+		cipher = ''
+		prevblock = iv
+		for i in (0...(plain.length/16).to_f.ceil) do
+			plainblock = plain[i*16...(i+1)*16]
+
+			cipherblock = self.aes128_ecb_encrypt(self.xor(prevblock, plainblock), key)
+
+			cipher += cipherblock
+			prevblock = cipherblock
+		end
+
+		return cipher
+	end
+
 	# Decrypts AES-128 CBC
 	# Input: binary ciphertext, binary key, binary iv
 	# Output: binary plaintext
 	def self.aes128_cbc_decrypt(cipher, key, iv)
-		cipher = self.padd(cipher, 16)
 		plain = ''
 		prevblock = iv
 		for i in (0...cipher.length/16) do
