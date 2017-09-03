@@ -40,48 +40,37 @@ end
 # Recover secret
 
 prefix = (['a']*(blocksize-1)).join('')
-prefixlength = blocksize-1
+known = ''
+blocknum = 0
+blockcount = (oracle('').length/16).ceil
 
 while prefix[0] == 'a' do
 
-	firstblock = oracle(prefix[0...prefixlength])[(0...blocksize)]
-	#puts prefix.inspect
-	#puts prefix[0..prefixlength].inspect
+	firstblock = oracle(prefix)[(blocksize*blocknum...blocksize*(blocknum+1))]
+
+	#puts (known).inspect
 
 	foundbyte = ''
 	for i in (0...256) do
-		guessblock = prefix + [i].pack('c*')
+		guessblock = prefix + known + [i].pack('c*')
 
-		#puts guessblock.inspect
-		if firstblock == oracle(guessblock)[0...blocksize]
+		if firstblock == oracle(guessblock)[blocksize*blocknum...blocksize*(blocknum+1)]
 			foundbyte = [i].pack('c*')
-			puts 'Found:' + foundbyte.inspect
+			known += foundbyte
 			break
 		end
 	end
 
-	prefix = (prefix + foundbyte)[(-prefix.length..-1)]
-	prefixlength -= 1
+	prefix = prefix[(0..-2)]
+	if prefix == ''
+		blocknum += 1
+		prefix = (['a']*blocksize).join('')
+	end
+
+	if blocknum >= blockcount
+		break
+	end
 end
 
-prefix = (['a']*(blocksize-1)).join('') + prefix
-prefixlength += blocksize-2
-
-firstblock = oracle(prefix[0...prefixlength])[(blocksize...blocksize*2)]
-puts prefix.inspect
-puts prefix[0..prefixlength].inspect
-
-	foundbyte = ''
-	for i in (0...256) do
-		guessblock = prefix + [i].pack('c*')
-
-		puts guessblock.inspect
-		if firstblock == oracle(guessblock)[blocksize...blocksize*2]
-			foundbyte = [i].pack('c*')
-			puts 'Found:' + foundbyte.inspect
-			break
-		end
-	end
-
-	prefix = (prefix + foundbyte)[(-prefix.length..-1)]
-	prefixlength -= 1
+puts 'Recovered plaintext: '
+puts known.inspect
