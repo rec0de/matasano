@@ -23,8 +23,21 @@ class Matasano
 	def self.padd(string, blocksize)
 		string = string.b
 		padd_bytes = blocksize - (string.length % blocksize)
+		if padd_bytes == 0
+			padd_bytes = blocksize
+		end
 		padding = ([padd_bytes]*padd_bytes).pack('c*')
 		return string + padding.b
+	end
+
+	def self.unpadd(string)
+		string = string.b
+		lastbyte = string[-1].bytes[0]
+		if string.length >= lastbyte && string[-lastbyte..-1].bytes.join('') == ([lastbyte]*lastbyte).join('')
+			return string[0...-lastbyte]
+		else
+			raise "Invalid Padding"
+		end
 	end
 
 	# Binary operations
