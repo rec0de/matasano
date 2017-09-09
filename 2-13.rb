@@ -82,7 +82,7 @@ for i in blocks.length.times do
 end
 
 prevbytes = (blocksize - (input.length - blocksize*2))
-prevblocks = blocksize*(i-2)
+prevblocks = i-2
 
 # Construct 'admin' block
 
