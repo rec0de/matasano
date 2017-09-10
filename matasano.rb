@@ -146,6 +146,19 @@ class Matasano
 		return plain
 	end
 
+	# En- / Decrypts AES-128 CTR
+	# Input: binary input, binary key, uint64_t nonce
+	# Output: binary output
+	def self.aes128_ctr_crypt(input, key, nonce)
+		keystream = ''
+		for i in (0...(input.length.to_f/16).ceil)
+			keystream += [nonce].pack('Q*')+[i].pack('Q*')
+		end
+		keystream = self.aes128_ecb_encrypt(keystream, key)
+		keystream = keystream[0...input.length]
+		return self.xor(input, keystream)
+	end
+
 	# Cipher breaking
 
 	# Attempts to break single byte xor
