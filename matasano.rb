@@ -43,6 +43,12 @@ class Matasano
 	# Binary operations
 
 	def self.xor(a, b)
+		if a.length < b.length
+			b = b[0...a.length]
+		elsif a.length > b.length
+			a = a[0...b.length]
+		end
+
 		return a.bytes.zip(b.bytes).map{ |x, y| x^y }.pack('c*')
 	end
 
