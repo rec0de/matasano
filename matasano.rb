@@ -56,7 +56,7 @@ class Matasano
 
 	def self.textscore(text)
 		chars = text.split('')
-		englishlike = chars.count{ |x| /[a-zA-Z ',.!?]/.match?(x) }.to_f
+		englishlike = chars.count{ |x| /[a-zA-Z ',.!?\/]/.match?(x) }.to_f
 		return englishlike / chars.length
 	end
 
