@@ -227,10 +227,10 @@ class Matasano
 		for keysize in range do
 
 			# break if keysize is too long for ciphertext
-			if keysize*2 > cipher.length
-				break
+			break if keysize*2 > cipher.length
+	
 			# if there is not enough ciphertext for 4 blocks, use only 2
-			elsif keysize * 4 > cipher.length
+			if keysize * 4 > cipher.length
 				block_a = cipher[0...keysize]
 				block_b = cipher[keysize...keysize*2]
 
