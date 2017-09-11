@@ -69,7 +69,7 @@ class Matasano
 
 	def self.genkey(bytes = 16)
 		key = ''
-		for i in (1..bytes) do
+		bytes.times do
 			key += [Random.rand(256)].pack('c*').b
 		end
 
@@ -125,7 +125,7 @@ class Matasano
 	def self.aes128_cbc_encrypt(plain, key, iv)
 		cipher = ''
 		prevblock = iv
-		for i in (0...(plain.length/16).to_f.ceil) do
+		((plain.length/16).to_f.ceil).times do |i|
 			plainblock = plain[i*16...(i+1)*16]
 
 			cipherblock = self.aes128_ecb_encrypt(self.xor(prevblock, plainblock), key)
@@ -143,7 +143,7 @@ class Matasano
 	def self.aes128_cbc_decrypt(cipher, key, iv)
 		plain = ''
 		prevblock = iv
-		for i in (0...cipher.length/16) do
+		(cipher.length/16).times do |i|
 			cipherblock = cipher[i*16...(i+1)*16]
 			plain += self.xor(prevblock, self.aes128_ecb_decrypt(cipherblock, key))
 			prevblock = cipherblock
@@ -157,7 +157,7 @@ class Matasano
 	# Output: binary output
 	def self.aes128_ctr_crypt(input, key, nonce)
 		keystream = ''
-		for i in (0...(input.length.to_f/16).ceil)
+		((input.length.to_f/16).ceil).times do |i|
 			keystream += [nonce].pack('Q*')+[i].pack('Q*')
 		end
 		keystream = self.aes128_ecb_encrypt(keystream, key)
@@ -175,7 +175,7 @@ class Matasano
 		best_guess = nil
 		key_guess = nil
 
-		for i in 0..255 do
+		256.times do |i|
 			decrypted = self.xor_sbyte(cipher, i)
 			score = self.textscore(decrypted)
 
