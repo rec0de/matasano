@@ -209,14 +209,14 @@ class Matasano
 	# Attempts to break single byte xor
 	# Input: binary ciphertext
 	# Output: [plaintext, key] on success, false otherwise
-	def self.break_xor_sbyte(cipher, threshold = 0.9)
+	def self.break_xor_sbyte(cipher, threshold = -0.02)
 		max = - Float::INFINITY
 		best_guess = nil
 		key_guess = nil
 
 		256.times do |i|
 			decrypted = self.xor_sbyte(cipher, i)
-			score = self.textscore(decrypted)
+			score = self.textscore2(decrypted)
 
 			if score > max
 				best_guess = decrypted
