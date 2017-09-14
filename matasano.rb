@@ -20,6 +20,24 @@ class Matasano
 		return Base64.strict_decode64(b64)
 	end
 
+	def self.hex2dec(hex)
+		return hex.to_i(16)
+	end
+
+	def self.dec2hex(dec)
+		raise "dec2hex expects integer input. Given: "+dec.inspect unless dec.is_a?(Numeric)
+		return dec.to_s(16).rjust(2, '0')
+	end
+
+	def self.bin2dec(bin)
+		return self.bin2hex(bin).to_i(16)
+	end
+
+	def self.dec2bin(dec)
+		raise "dec2bin expects integer input. Given: "+dec.inspect unless dec.is_a?(Numeric)
+		return self.hex2bin(self.dec2hex(dec)).b
+	end
+
 	def self.padd(string, blocksize)
 		string = string.b
 		padd_bytes = blocksize - (string.length % blocksize)
