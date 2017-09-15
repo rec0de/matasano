@@ -70,6 +70,11 @@ class Matasano
 		return a.bytes.zip(b.bytes).map{ |x, y| x^y }.pack('c*')
 	end
 
+	def self.leftrotate_32(int, n=1)
+		raise "leftrotate_32 expects numeric input" unless int.is_a?(Numeric)
+		return ((int << n) | (int >> 32-n)) & 0xffffffff # AND mask to keep result 32bit
+	end
+
 	# Metrics
 
 	def self.letter_frequency(str)
@@ -208,6 +213,79 @@ class Matasano
 		keystream = self.aes128_ecb_encrypt(keystream, key)
 		keystream = keystream[0...input.length]
 		return self.xor(input, keystream)
+	end
+
+	# Hashes & Checksums
+
+	# Creates SHA1 hash of input, implemented following wikipedia pseudocode
+	# Input: binary input
+	# Output: binary hash
+	def self.sha1(input)
+
+		# Init variables
+		h0 = 0x67452301
+		h1 = 0xEFCDAB89
+		h2 = 0x98BADCFE
+		h3 = 0x10325476
+		h4 = 0xC3D2E1F0
+		input = input.b
+
+		ml = input.length * 8
+		input << 0x80 # Append '10000000' bits to message
+		while input.length*8 % 512 != 448 do
+			input = input << 0
+		end
+
+		input += [ml].pack('Q').reverse # append message length converted to 64bit big endian
+
+		input.unpack('C*').each_slice(512/8) do |chunk|
+
+			words = []
+			chunk.each_slice(32/8){|a,b,c,d| words << (((a<<8|b)<<8|c)<<8|d) }
+
+			for i in (16..79) do
+				words[i] = self.leftrotate_32(words[i-3] ^ words[i-8] ^ words[i-14] ^ words[i-16], 1)
+			end
+
+			puts words.inspect
+
+			a = h0
+			b = h1
+			c = h2
+			d = h3
+			e = h4
+
+			for i in (0..79) do
+				if i <= 19 then
+					f = (b & c) | ((b ^ 0xffffffff) & d) # xor 0xffffffff should equal !b
+					k = 0x5A827999
+				elsif i <= 39 then
+					f = b ^ c ^ d
+					k = 0x6ED9EBA1
+				elsif i <= 59
+					f = (b & c) | (b & d) | (c & d)
+					k = 0x8F1BBCDC
+				else
+					f = b ^ c ^ d
+					k = 0xCA62C1D6
+				end
+
+				temp = (self.leftrotate_32(a, 5) + f + e + k + words[i]) & 0xffffffff
+				e = d
+				d = c
+				c = self.leftrotate_32(b, 30)
+				b = a
+				a = temp
+			end
+
+			h0 = (h0 + a) & 0xffffffff
+			h1 = (h1 + b) & 0xffffffff
+			h2 = (h2 + c) & 0xffffffff
+			h3 = (h3 + d) & 0xffffffff
+			h4 = (h4 + e) & 0xffffffff
+		end
+
+		return self.dec2bin((h0 << 128) | (h1 << 96) | (h2 << 64) | (h3 << 32) | h4)
 	end
 
 	# Cipher breaking
