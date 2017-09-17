@@ -220,23 +220,20 @@ class Matasano
 	# Creates SHA1 hash of input, implemented following wikipedia pseudocode
 	# Input: binary input
 	# Output: binary hash
-	def self.sha1(input)
+	def self.sha1(input, h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0, nopadd = false)
 
-		# Init variables
-		h0 = 0x67452301
-		h1 = 0xEFCDAB89
-		h2 = 0x98BADCFE
-		h3 = 0x10325476
-		h4 = 0xC3D2E1F0
 		input = input.b
 
-		ml = input.length * 8
-		input << 0x80 # Append '10000000' bits to message
-		while input.length*8 % 512 != 448 do
-			input = input << 0
-		end
+		# skip padding if caller supplies already-padded data
+		unless nopadd then
+			ml = input.length * 8
+			input << 0x80 # Append '10000000' bits to message
+			while input.length*8 % 512 != 448 do
+				input = input << 0
+			end
 
-		input += [ml].pack('Q').reverse # append message length converted to 64bit big endian
+			input += [ml].pack('Q').reverse # append message length converted to 64bit big endian
+		end
 
 		input.unpack('C*').each_slice(512/8) do |chunk|
 
@@ -246,8 +243,6 @@ class Matasano
 			for i in (16..79) do
 				words[i] = self.leftrotate_32(words[i-3] ^ words[i-8] ^ words[i-14] ^ words[i-16], 1)
 			end
-
-			puts words.inspect
 
 			a = h0
 			b = h1
