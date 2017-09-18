@@ -26,7 +26,8 @@ class Matasano
 
 	def self.dec2hex(dec)
 		raise "dec2hex expects integer input. Given: "+dec.inspect unless dec.is_a?(Numeric)
-		return dec.to_s(16).rjust(2, '0')
+		hex = dec.to_s(16)
+		return hex.length % 2 == 0 ? hex : '0' + hex
 	end
 
 	def self.bin2dec(bin)
@@ -281,6 +282,25 @@ class Matasano
 		end
 
 		return self.dec2bin((h0 << 128) | (h1 << 96) | (h2 << 64) | (h3 << 32) | h4)
+	end
+
+	# Creates HMAC-SHA1 mac of input
+	# Input: binary data, binary key
+	# Output: binary MAC
+	def self.hmac_sha1(data, key)
+		blocksize = 64
+		if key.length > blocksize then
+			key = self.sha1(key)
+		end
+
+		if key.length < blocksize then+
+			key += ([0]*(blocksize-key.length)).pack('c*')
+		end
+
+		o_key_padd = self.xor(key, ([0x5c]*blocksize).pack('c*'))
+		i_key_padd = self.xor(key, ([0x36]*blocksize).pack('c*'))
+
+		return self.sha1(o_key_padd + self.sha1(i_key_padd + data))
 	end
 
 	# Cipher breaking
