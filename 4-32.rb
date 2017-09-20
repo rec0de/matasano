@@ -13,7 +13,7 @@ mac = ''
 avg = 0
 variance = 0
 sample = []
-sample_size = 15
+sample_size = 25
 confidence_interval = 8
 
 sample_size.times do
