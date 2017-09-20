@@ -76,6 +76,24 @@ class Matasano
 		return ((int << n) | (int >> 32-n)) & 0xffffffff # AND mask to keep result 32bit
 	end
 
+	def self.modexp(a, e, m, fast = false)
+		if fast then
+			require "openssl"
+			return a.to_bn.mod_exp(e, m).to_i
+		end
+
+		a = a % m
+		res = 1
+
+		until e.zero?
+			res = (res * a) % m if e.odd?
+			e = e >> 1
+			a = (a * a) % m
+		end
+
+		return res
+	end
+
 	# Metrics
 
 	def self.letter_frequency(str)
